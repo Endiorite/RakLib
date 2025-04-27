@@ -92,7 +92,8 @@ class Server implements ServerInterface{
 		private ServerEventListener $eventListener,
 		private ExceptionTraceCleaner $traceCleaner,
 		private int $recvMaxSplitParts = ServerSession::DEFAULT_MAX_SPLIT_PART_COUNT,
-		private int $recvMaxConcurrentSplits = ServerSession::DEFAULT_MAX_CONCURRENT_SPLIT_COUNT
+		private int $recvMaxConcurrentSplits = ServerSession::DEFAULT_MAX_CONCURRENT_SPLIT_COUNT,
+		private array $whitelistAddress = []
 	){
 		if($maxMtuSize < Session::MIN_MTU_SIZE){
 			throw new \InvalidArgumentException("MTU size must be at least " . Session::MIN_MTU_SIZE . ", got $maxMtuSize");
@@ -350,6 +351,9 @@ class Server implements ServerInterface{
 	}
 
 	public function blockAddress(string $address, int $timeout = 300) : void{
+		if(isset($this->whitelistAddress[$address])){
+			return;
+		}
 		$final = time() + $timeout;
 		if(!isset($this->block[$address]) or $timeout === -1){
 			if($timeout === -1){
